@@ -1,26 +1,28 @@
 ## Constants
+VERSION="0.0.1"
+ARCH="i386"
+COINTU="cointu-$VERSION-$ARCH"
+COINTU_ISO="$COINTU.iso"
+
 TMP=".tmp"
 SRC="$TMP/src"
 LIVE="$TMP/live"
 CUSTOM="$TMP/custom"
-VERIFYISO=true
-COPYSRC=true
+CD="$TMP/cd"
 ISO='ubuntu-13.10-desktop-i386.iso'
+
 ISOUrl="http://releases.ubuntu.com/saucy/ubuntu-13.10-desktop-i386.iso"
 SHA256URL="http://releases.ubuntu.com/saucy/SHA256SUMS"
 
 ## Get CLI options
 ## -s do not verify ISO integrity
-while getopts ":sca" opt; do
+while getopts ":sa" opt; do
   case $opt in
     s)
-      VERIFYISO=false
-      ;;
-    c)
-      COPYSRC=false
+      SKIPVERIFY=true
       ;;
     a)
-      UPDATE_APT=false
+      SKIPUPDATE=true
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
@@ -35,7 +37,7 @@ if ! [ -e "$ISO" ] ; then
 fi
 
 ## Ensure integrity of ISO with sha256sum
-if $VERIFYISO ; then
+if ! $SKIPVERIFY ; then
   if [ -z "$VALIDSHA256" ] ; then
     echo "Getting checksum from $SHA256URL"
     VALIDSHA256=`curl -s $SHA256URL | grep $ISO | awk '{ print $1 }'`
@@ -52,20 +54,18 @@ fi
  
 
 ## Directory Setup
-mkdir -p $TMP $LIVE $LIVE/squashfs $SRC $CUSTOM $TMP/squashfs
+mkdir -p $TMP $CD $LIVE $LIVE/squashfs $SRC $CUSTOM
 
-## Prepare for CUSTOMization
+## Prepare for customization
 echo "Mounting source ISO $ISO to $SRC"
 sudo mount -o loop $ISO $SRC
-echo "rsync $SRC into $LIVE"
-rsync --exclude=/casper/filesystem.squashfs -a $SRC $LIVE
+echo "Unpacking ISO into $CD This might take a minute."
+rsync --exclude="casper/filesystem.squashfs" -a $SRC/ $CD
 sudo modprobe squashfs
 echo "Mounting squashfs"
 sudo mount -t squashfs -o loop $SRC/casper/filesystem.squashfs $LIVE/squashfs
-if $COPYSRC ; then
-  echo "Copying squashfs into $CUSTOM ..."
-  sudo cp -a $LIVE/squashfs/* $CUSTOM
-fi
+echo "Syncing $LIVE/squashfs with $CUSTOM. This might take a minute."
+sudo rsync -a $LIVE/squashfs/ $CUSTOM
 
 
 ## Enable guest distro network access
@@ -77,3 +77,18 @@ sudo cp -r packages $CUSTOM/tmp
 sudo cp guest.sh $CUSTOM/tmp
 echo "Chroot into guest"
 sudo chroot $CUSTOM /bin/bash /tmp/guest.sh
+
+## Rebuild filesystem manifest
+echo "Rebuilding filesystem manifest.."
+sudo chmod +w $CD/casper/filesystem.manifest
+sudo chroot $CUSTOM dpkg-query -W --showformat='${Package} ${Version}\n' > $CD/casper/filesystem.manifest
+sudo cp $CD/casper/filesystem.manifest $CD/casper/filesystem.manifest-desktop
+
+## Regenerate squashfs
+echo "Regenerating squashfs.."
+sudo mksquashfs $CUSTOM $CD/casper/filesystem.squashfs
+sudo rm -f $CD/md5sum.txt
+cd $CD
+sudo find . -type f -print0 | xargs -0 md5sum > md5sum.txt
+echo "Building iso file $COINTU_ISO"
+sudo mkisofs -D -r -V "$COINTU" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ../$COINTU_ISO
