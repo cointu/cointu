@@ -52,23 +52,30 @@ fi
 mkdir -p $tmp $live $live/squashfs $src $custom $tmp/squashfs
 
 ## Prepare for customization
-echo "Preparing local copy"
+echo "Mounting source iso $iso to $src"
 sudo mount -o loop $iso $src
+echo "rsync $src into $live"
 rsync --exclude=/casper/filesystem.squashfs -a $src $live
 sudo modprobe squashfs
+echo "Mounting squashfs"
 sudo mount -t squashfs -o loop $src/casper/filesystem.squashfs $live/squashfs
-echo "Copying squashfs into $custom ..."
 if $copySrc ; then
+  echo "Copying squashfs into $custom ..."
   sudo cp -a $live/squashfs/* $custom
 fi
 
 
 ## Enable guest distro network access
+echo "Copy network access files into guest"
 sudo cp /etc/resolv.conf /etc/hosts $custom/etc
 
 ## Customize guest distro 
-chroot $custom /bin/bash -x << 'ENDCUSTOM'
+sudo cp purge_packages $custom/tmp
+echo "Chrooting into guest"
+sudo chroot $custom /bin/bash -x << 'ENDCUSTOM'
 mount -t proc none /proc
 mount -t sysfs none /sys
 export HOME=/root
+export PURGE_PACKAGES=`cat /tmp/purge_packages | grep -v "#"`
+sudo apt-get purge $PURGE_PACKAGES --assume-yes
 ENDCUSTOM
