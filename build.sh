@@ -90,5 +90,7 @@ sudo mksquashfs $CUSTOM $CD/casper/filesystem.squashfs
 sudo rm -f $CD/md5sum.txt
 cd $CD
 sudo find . -type f -print0 | xargs -0 md5sum > md5sum.txt
-echo "Building iso file $COINTU_ISO"
+echo "Building iso $COINTU_ISO"
 sudo mkisofs -D -r -V "$COINTU" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ../$COINTU_ISO
+echo "Generating sha256 checksum of $COINTU_ISO"
+sha256sum $COINTU_ISO > $COINTU.sha256
