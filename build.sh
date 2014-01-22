@@ -1,6 +1,7 @@
 ## Constants
 VERSION="0.0.1"
 ARCH="i386"
+BASE_DIR=$CWD
 COINTU="cointu-$VERSION-$ARCH"
 COINTU_ISO="$COINTU.iso"
 
@@ -89,8 +90,9 @@ echo "Regenerating squashfs.."
 sudo mksquashfs $CUSTOM $CD/casper/filesystem.squashfs
 sudo rm -f $CD/md5sum.txt
 cd $CD
+echo "Regnerating md5sums.."
 sudo find . -type f -print0 | xargs -0 md5sum > md5sum.txt
 echo "Building iso $COINTU_ISO"
-sudo mkisofs -D -r -V "$COINTU" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ../$COINTU_ISO
+sudo mkisofs -D -r -V "$COINTU" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o ../$COINTU_ISO .
 echo "Generating sha256 checksum of $COINTU_ISO"
-sha256sum $COINTU_ISO > $COINTU.sha256
+sha256sum $COINTU_ISO > $BASE_DIR/$COINTU.sha256
