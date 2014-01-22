@@ -1,10 +1,9 @@
 mount -t proc none /proc
 mount -t sysfs none /sys
 export HOME=/root
-export PACKAGES="/tmp/packages"
 
 
-PURGE_UNNEEDED=false
+PURGE_UNNEEDED=true
 ## Purge unnecessary packages
 if $PURGE_UNNEEDED ; then
   export PURGE=`cat $PACKAGES/purge.list`
@@ -12,7 +11,8 @@ if $PURGE_UNNEEDED ; then
   sudo apt-get purge $PURGE --assume-yes 
 fi
 
-ADD_NEW=false
+export PACKAGES="/tmp/packages"
+ADD_NEW=true
 ## Install new packages
 if $ADD_NEW ; then
   if $UPDATE_APT ; then
