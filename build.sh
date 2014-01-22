@@ -1,7 +1,8 @@
 ## Constants
 VERSION="0.0.1"
 ARCH="i386"
-BASE_DIR=$CWD
+BASE_DIR=$PWD
+echo $BASE_DIR
 COINTU="cointu-$VERSION-$ARCH"
 COINTU_ISO="$COINTU.iso"
 
@@ -93,6 +94,6 @@ cd $CD
 echo "Regnerating md5sums.."
 sudo find . -type f -print0 | xargs -0 md5sum > md5sum.txt
 echo "Building iso $COINTU_ISO"
-sudo mkisofs -D -r -V "$COINTU" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o $BASE_DIR/$COINTU_ISO .
+mkisofs -D -r -V "$COINTU" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o $BASE_DIR/$COINTU_ISO .
 echo "Generating sha256 checksum of $COINTU_ISO"
 sha256sum $COINTU_ISO > $BASE_DIR/$COINTU.sha256
