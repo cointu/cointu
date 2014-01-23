@@ -1,8 +1,8 @@
 {
   "name": "cointu",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Cointu build script and related tools =====",
-  "main": "index.js",
+  "main": "build.sh",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git://github.com/cointu/cointu.git"
   },
-  "author": "",
+  "author": "http://github.com/zdwolfe",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/cointu/cointu/issues"
