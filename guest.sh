@@ -40,6 +40,8 @@ sudo apt-get autoremove
 echo "Removing tmp files"
 sudo rm -rf /tmp/*
 sudo rm -f /etc/hosts /etc/resolv.conf
+sudo rm -rf /*old
+sudo rm -rf /*_1
 
 ## Unmount proc, sys
 sudo umount /proc || sudo umount -lf /proc
