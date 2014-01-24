@@ -1,6 +1,3 @@
-Cointu build script and related tools
-=====
-
-## Dependencies
-* [squashfs-tools](http://squashfs.sourceforge.net/)
-* [genisoimage](http://packages.ubuntu.com/saucy/genisoimage)
+![cointu](http://i.imgur.com/EXezhNz.png)
+# Cointu Linux
+Cointu Linux adds commonly-used cryptocurrency tools onto a 'trimmed' version of Ubuntu 13.10 (saucy)
